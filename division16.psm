@@ -1,0 +1,76 @@
+op10	  EQU	 s8;	1st operand LSB
+op11	  EQU 	 s0;	1st operand MSB
+op20	  EQU	 s9;	2nd operand LSB
+op21	  EQU	 s1;	2nd operand MSB
+res0	  EQU	 sF;	result register byte 0
+res1	  EQU	 sE;	result register byte 1
+res2	  EQU	 sD;	result register byte 2
+res3	  EQU	 sC;	result register byte 3
+temp0	  EQU	 s4;	temporary storage
+count	  EQU	 s6;	counter
+
+op10_in  DSIN 110
+op11_in  DSIN 111
+op20_in  DSIN 112
+op21_in  DSIN 113
+res0_out DSOUT 120
+res1_out DSOUT 121
+res2_out DSOUT 122
+res3_out DSOUT 123
+
+EINT
+
+
+MAIN:
+	JUMP MAIN
+
+
+ISR:
+	IN op10,op10_in
+	IN op11,op11_in
+	IN op20,op20_in
+	IN op21,op21_in
+	CALL DIVISION
+	OUT res0,res0_out
+	OUT res1,res1_out
+	OUT res2,res2_out
+	OUT res3,res3_out
+RETI ENABLE
+
+
+DIVISION:
+	LOAD count,0 ; count iterations
+	
+	DIV_PREPARE:
+	    LOAD temp0,op20
+	    COMP temp0,$80
+	    JUMP NC,DIV_ENTER_LOOP
+	    SL0 op20
+	    ADD count,1
+    JUMP DIV_PREPARE
+	
+	DIV_ENTER_LOOP:
+	    ADD count,1
+	    DIV_LOOP:
+	        COMP op20,op10 ; compare operands
+	        JUMP NC,DIV_OP2_NOT_LESS
+	        JUMP DIV_OP2_LESS
+	        CONTINUE_DIV_LOOP:
+	            OUT res0,res0_out ; debug
+	            SUB count,1
+	            COMP count,0
+	            RET Z
+        JUMP DIV_LOOP
+	
+	DIV_OP2_LESS:
+	    SUB op10,op20
+	    SL1 res0
+	    JUMP CONTINUE_DIV_LOOP
+	
+	DIV_OP2_NOT_LESS:
+	    SL0 res0
+	    JUMP CONTINUE_DIV_LOOP
+
+
+ORG $3FF
+JUMP ISR
