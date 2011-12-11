@@ -59,8 +59,6 @@ MULTIPLICATION:
         	OUT res2,res2_out ; debug
         	OUT res3,res3_out ; debug
 	        
-	        SL0 op10 ; shift op1 lsb left
-	        SLA op11 ; shift op1 msb left, carry in
 	        SL0 temp0 ; shift mask left
 	        SUB count,1 ; subtract 1 from count
 	        
@@ -79,18 +77,26 @@ MULTIPLICATION:
 	    LOAD temp1, op20
 	    AND temp1, temp0
 	    COMP temp1, temp0
-	    JUMP NZ, MULT_LOOP_CONTINUE
+	    JUMP NZ, MULT_LSB_CONTINUE
 	    ADD res0,op10
-	    ADDC res1,0
+	    ADDC res1,op11
+	    ADDC res2,0
+	    MULT_LSB_CONTINUE:
+	        SL0 op10 ; shift op1 lsb left
+	        SLA op11 ; shift op1 msb left, carry in
     JUMP MULT_LOOP_CONTINUE
 	
 	MULT_MSB:
 	    LOAD temp1, op21
 	    AND temp1, temp0
 	    COMP temp1, temp0
-	    JUMP NZ, MULT_LOOP_CONTINUE
+	    JUMP NZ, MULT_MSB_CONTINUE
 	    ADD res1,op11
+	    ADDC res2,op10
 	    ADDC res2,0
+	    MULT_MSB_CONTINUE: ; for now, lsb of op1 are unused so I reuse it
+	        SL0 op11
+	        SLA op10
     JUMP MULT_LOOP_CONTINUE
 
 
