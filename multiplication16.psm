@@ -1,5 +1,7 @@
 op10	  EQU	 s8;	1st operand LSB
 op11	  EQU 	 s0;	1st operand MSB
+op12      EQU    s2;    1st operand's backup 1
+op13      EQU    s3;    1st operand's backup 2
 op20	  EQU	 s9;	2nd operand LSB
 op21	  EQU	 s1;	2nd operand MSB
 res0	  EQU	 sF;	result register byte 0
@@ -80,10 +82,13 @@ MULTIPLICATION:
 	    JUMP NZ, MULT_LSB_CONTINUE
 	    ADD res0,op10
 	    ADDC res1,op11
-	    ADDC res2,0
+	    ADDC res2,op12
+	    ADDC res3,op13
 	    MULT_LSB_CONTINUE:
 	        SL0 op10 ; shift op1 lsb left
 	        SLA op11 ; shift op1 msb left, carry in
+	        SLA op12
+	        SLA op13
     JUMP MULT_LOOP_CONTINUE
 	
 	MULT_MSB:
@@ -91,12 +96,15 @@ MULTIPLICATION:
 	    AND temp1, temp0
 	    COMP temp1, temp0
 	    JUMP NZ, MULT_MSB_CONTINUE
-	    ADD res1,op11
-	    ADDC res2,op10
-	    ADDC res2,0
+	    ADD res0,op10
+	    ADDC res1,op11
+	    ADDC res2,op12
+	    ADDC res3,op13
 	    MULT_MSB_CONTINUE: ; for now, lsb of op1 are unused so I reuse it
-	        SL0 op11
-	        SLA op10
+	        SL0 op10
+	        SLA op11
+	        SLA op12
+	        SLA op13
     JUMP MULT_LOOP_CONTINUE
 
 
