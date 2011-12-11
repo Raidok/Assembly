@@ -8,7 +8,7 @@ res2	  EQU	 sD;	result register byte 2
 res3	  EQU	 sC;	result register byte 3
 temp0	  EQU	 s4;	temporary storage
 temp1	  EQU	 s5;	temporary storage
-count	  EQU	 s6;	symbol counter
+count	  EQU	 s6;	counter
 
 op10_in  DSIN 110
 op11_in  DSIN 111
@@ -40,7 +40,7 @@ RETI ENABLE
 
 
 MULTIPLICATION:
-	LOAD count,16 ; bittide arv
+	LOAD count,16 ; number of bits
 	CALL MULT_RESET
 	LOAD res0,0
 	LOAD res1,0
@@ -54,21 +54,21 @@ MULTIPLICATION:
 
 	    MULT_LOOP_CONTINUE:
 	    
-	        OUT res0,res0_out ; debugimiseks
-	        OUT res1,res1_out ; debugimiseks
-        	OUT res2,res2_out ; debugimiseks
-        	OUT res3,res3_out ; debugimiseks
+	        OUT res0,res0_out ; debug
+	        OUT res1,res1_out ; debug
+        	OUT res2,res2_out ; debug
+        	OUT res3,res3_out ; debug
 	        
-	        SL0 op10 ; op1 noorema poole nihutamine vasakule
-	        SLA op11 ; op1 vanema poole nihutamine vasakule, carry sisse
-	        SL0 temp0 ; maski nihutamine vasakule
-	        SUB count,1 ; counteri vähendamine 1 võrra
+	        SL0 op10 ; shift op1 lsb left
+	        SLA op11 ; shift op1 msb left, carry in
+	        SL0 temp0 ; shift mask left
+	        SUB count,1 ; subtract 1 from count
 	        
 	        COMP count,8
 	        CALL Z,MULT_RESET
 	        
-	        COMP count,0 ; kas counter on jõudnud lõpuni?
-        RET Z ; kui on 0, siis väljutakse
+	        COMP count,0 ; is count 0 yet?
+        RET Z ; if count == 0, return
     JUMP MULT_LOOP
     
     MULT_RESET:
