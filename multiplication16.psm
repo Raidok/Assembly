@@ -1,0 +1,98 @@
+op10	  EQU	 s8;	1st operand LSB
+op11	  EQU 	 s0;	1st operand MSB
+op20	  EQU	 s9;	2nd operand LSB
+op21	  EQU	 s1;	2nd operand MSB
+res0	  EQU	 sF;	result register byte 0
+res1	  EQU	 sE;	result register byte 1
+res2	  EQU	 sD;	result register byte 2
+res3	  EQU	 sC;	result register byte 3
+temp0	  EQU	 s4;	temporary storage
+temp1	  EQU	 s5;	temporary storage
+count	  EQU	 s6;	symbol counter
+
+op10_in  DSIN 110
+op11_in  DSIN 111
+op20_in  DSIN 112
+op21_in  DSIN 113
+res0_out DSOUT 120
+res1_out DSOUT 121
+res2_out DSOUT 122
+res3_out DSOUT 123
+
+EINT
+
+
+MAIN:
+	JUMP MAIN
+
+
+ISR:
+	IN op10,op10_in
+	IN op11,op11_in
+	IN op20,op20_in
+	IN op21,op21_in
+	CALL MULTIPLICATION
+	OUT res0,res0_out
+	OUT res1,res1_out
+	OUT res2,res2_out
+	OUT res3,res3_out
+RETI ENABLE
+
+
+MULTIPLICATION:
+	LOAD count,16 ; bittide arv
+	CALL MULT_RESET
+	LOAD res0,0
+	LOAD res1,0
+	LOAD res2,0
+	LOAD res3,0
+	
+	MULT_LOOP:
+	    COMP count,9
+	    JUMP C,MULT_MSB
+	    JUMP MULT_LSB
+
+	    MULT_LOOP_CONTINUE:
+	    
+	        OUT res0,res0_out ; debugimiseks
+	        OUT res1,res1_out ; debugimiseks
+        	OUT res2,res2_out ; debugimiseks
+        	OUT res3,res3_out ; debugimiseks
+	        
+	        SL0 op10 ; op1 noorema poole nihutamine vasakule
+	        SLA op11 ; op1 vanema poole nihutamine vasakule, carry sisse
+	        SL0 temp0 ; maski nihutamine vasakule
+	        SUB count,1 ; counteri vähendamine 1 võrra
+	        
+	        COMP count,8
+	        CALL Z,MULT_RESET
+	        
+	        COMP count,0 ; kas counter on jõudnud lõpuni?
+        RET Z ; kui on 0, siis väljutakse
+    JUMP MULT_LOOP
+    
+    MULT_RESET:
+	    LOAD temp0,1
+    RET
+	    
+	MULT_LSB:
+	    LOAD temp1, op20
+	    AND temp1, temp0
+	    COMP temp1, temp0
+	    JUMP NZ, MULT_LOOP_CONTINUE
+	    ADD res0,op10
+	    ADDC res1,0
+    JUMP MULT_LOOP_CONTINUE
+	
+	MULT_MSB:
+	    LOAD temp1, op21
+	    AND temp1, temp0
+	    COMP temp1, temp0
+	    JUMP NZ, MULT_LOOP_CONTINUE
+	    ADD res1,op11
+	    ADDC res2,0
+    JUMP MULT_LOOP_CONTINUE
+
+
+ORG $3FF
+JUMP ISR
