@@ -1,0 +1,48 @@
+count  EQU s0
+op1    EQU s1
+op2    EQU s2
+result EQU s3
+tmp1   EQU s4
+tmp2   EQU s5
+
+op1_in  DSIN 101
+op2_in  DSIN 102
+res_out DSOUT 103
+
+EINT
+
+
+MAIN:
+	JUMP MAIN
+
+
+ISR:
+	IN op1,op1_in
+	IN op2,op2_in
+	CALL MULTIPLICATION
+	RETI ENABLE
+
+
+MULTIPLICATION:
+	LOAD count,8 ; bittide arv
+	LOAD tmp1,1
+	LOAD result,0
+	
+	MULT_LOOP:
+	    LOAD tmp2,op2 ; op2 duplication
+	    AND tmp2,tmp1 ; masking
+		COMP tmp2,tmp1 ; high or low?
+		JUMP NZ,CONTINUE_MULT_LOOP ; if 0, jump
+	    ADD result,op1 ; if 1, add op1 to res
+	    CONTINUE_MULT_LOOP:
+	        OUT result,res_out ; debug
+	        SL0 op1 ; shift op1 to the left, 0 in
+	        SL0 tmp1 ; shift mask to the left
+	        SUB count,1 ; subtract 1 from count
+	        COMP count,0 ; is it end yet?
+	        RET Z ; if count == 0, return
+    JUMP MULT_LOOP
+
+
+ORG $3FF
+JUMP ISR
