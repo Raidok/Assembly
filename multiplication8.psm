@@ -1,13 +1,17 @@
 count  EQU s0
 op1    EQU s1
+op1m   EQU s9
 op2    EQU s2
-result EQU s3
-tmp1   EQU s4
-tmp2   EQU s5
+tmp1   EQU s3
+tmp2   EQU s4
+res0   EQU s5
+res1   EQU s6
 
 op1_in  DSIN 101
 op2_in  DSIN 102
-res_out DSOUT 103
+res0_out DSOUT 103
+res1_out DSOUT 104
+
 
 EINT
 
@@ -26,17 +30,21 @@ ISR:
 MULTIPLICATION:
 	LOAD count,8 ; bittide arv
 	LOAD tmp1,1
-	LOAD result,0
+	LOAD res0,0
+	LOAD res1,0
 	
 	MULT_LOOP:
 	    LOAD tmp2,op2 ; op2 duplication
 	    AND tmp2,tmp1 ; masking
 		COMP tmp2,tmp1 ; high or low?
 		JUMP NZ,CONTINUE_MULT_LOOP ; if 0, jump
-	    ADD result,op1 ; if 1, add op1 to res
+	    ADD res0,op1 ; if 1, add op1 to res
+	    ADDC res1,op1m ; add carry if any
 	    CONTINUE_MULT_LOOP:
-	        OUT result,res_out ; debug
+	        OUT res0,res0_out ; debug
+	        OUT res1,res1_out ; debug
 	        SL0 op1 ; shift op1 to the left, 0 in
+	        SLA op1m ; backup register
 	        SL0 tmp1 ; shift mask to the left
 	        SUB count,1 ; subtract 1 from count
 	        COMP count,0 ; is it end yet?
