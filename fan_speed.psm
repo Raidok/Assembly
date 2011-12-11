@@ -1,0 +1,146 @@
+value EQU s0
+count EQU s1
+kiirus_noorem EQU s2
+kiirus_vanem  EQU s3
+
+tuh_saj EQU s4
+kym_yhe EQU s5
+
+tuh_out DSOUT 41
+saj_out DSOUT 42
+kym_out DSOUT 43
+yhe_out DSOUT 44
+
+i_port DSIO 128
+
+
+EINT ; katkestuste lubamine
+
+WAIT_LOOP: ; lõputu tsükkel
+    JUMP WAIT_LOOP
+
+
+ISR: ; katkestustega tegelemise protseduur
+	IN value,i_port ; loeb sisendit
+	COMP value,1 ; kas katkestus oli taimerist?
+	JUMP Z,CALCULATE_SPEED ; kui ZERO, siis oli taimerist ja tuleb kiirus arvutada
+	ADD count,1 ; summeerib poolpöördeid kui signaal oli ventilaatorist
+	ISR_OUT:
+	    LOAD value,0
+	    OUT value,i_port
+	    RETI ENABLE ; väljumine ja katkestuste taaslubamine
+
+
+CALCULATE_SPEED: ; arvutab pöörlemiskiiruse, x3
+	LOAD kiirus_noorem,count ; salvestame muutuja
+		 ; korrutamise teostamiseks ümber, count-i
+		 ; kasutame pärast lahutamiseks
+    SL0 kiirus_noorem ; nihe vasakule, sisse 0
+    SLA kiirus_vanem ; nihe vasakule, sisse CARRY
+    SL0 kiirus_noorem
+    SLA kiirus_vanem ; x4
+    SL0 kiirus_noorem
+    SLA kiirus_vanem ; x8
+    SL0 kiirus_noorem
+    SLA kiirus_vanem ; x16
+    SL0 kiirus_noorem
+    SLA kiirus_vanem ; x32
+    SUB kiirus_noorem,count
+    SUBC kiirus_vanem,0 ; x31
+    SUBC kiirus_noorem,count
+    SUBC kiirus_vanem,0 ; x30
+    
+	CALL BINARY_TO_BCD_LOOP ; BCD teisendus
+    CALL DISPLAY_SPEED ; tulemuse salvestamine kuvamiseks
+    
+    LOAD tuh_saj,0
+    LOAD kym_yhe,0
+
+    JUMP ISR_OUT ; väljumine ja katkestuste taaslubamine
+
+
+BINARY_TO_BCD_LOOP: ; binaarsest BCD-sse konverteerimine SHIFT ja ADD-3 algoritmiga
+	LOAD count,16
+	
+	BINARY_TO_BCD_REPEAT:
+	SL0 kiirus_noorem ; nihutamine läbi registrite
+    SLA kiirus_vanem
+    SLA kym_yhe
+    SLA tuh_saj
+	
+	SUB count,1 ; iteratsioonide loenduri vähendamine
+	RET Z ; kui value jõuab nulli, minnakse siin välja
+
+    ; kui mõne järgu väärtus >= 5, liidetakse sinna järku 3
+    CALL PARANDUSLIITMINE
+	
+	JUMP BINARY_TO_BCD_REPEAT ; kui value > 0, korratakse
+
+
+PARANDUSLIITMINE:
+    YHELISED:
+	LOAD value,kym_yhe ; kopeerin väärtuse ümber
+	AND value,$0F ; eemaldan kümnelised
+	COMP value,$05 ; kontrollib, kas >= 5
+	JUMP C,KYMNELISED ; kui < 5, väljutakse
+	ADD kym_yhe,$03 ; kui on >= 5, liidetakse noormemasse otsa 3
+
+    KYMNELISED:
+	LOAD value,kym_yhe ; kopeerin väärtuse ümber
+	AND value,$F0 ; eemaldan ühelised
+	COMP value,$50 ; kontrollib, kas >= 5
+	JUMP C,SAJALISED ; kui < 5, väljutakse
+	ADD kym_yhe,$30 ; kui on >= 5, liidetakse vanemasse otsa 3
+	ADDC tuh_saj,0 ; tekkinud ülekande edasikandmine vanemaid järke hoidvasse registrisse
+
+    SAJALISED:
+	LOAD value,tuh_saj ; kopeerin väärtuse ümber
+	AND value,$0F ; eemaldan tuhandelised
+	COMP value,$05 ; kontrollib, kas >= 5
+	JUMP C,TUHANDELISED ; kui < 5, väljutakse
+	ADD tuh_saj,$03 ; kui on >= 5, liidetakse noormemasse otsa 3
+
+    TUHANDELISED:
+	LOAD value,tuh_saj ; kopeerin väärtuse ümber
+	AND value,$F0 ; eemaldan sajalised
+	COMP value,$50 ; kontrollib, kas >= 5
+	RET C ; kui < 5, väljutakse
+	ADD tuh_saj,$30 ; kui on >= 5, liidetakse vanemasse otsa 3
+	RET
+
+
+DISPLAY_SPEED: ; BCD-koodi kirjutamine väljundportidesse
+    LOAD value,tuh_saj ; tuhandelised
+    AND value,$F0
+    COMP value,0 ; kui on suurem nullist, tuleks bitid õigesse kohta paigutada
+    CALL NZ,SHIFT_RIGHT_BY_FOUR
+    OUT value,tuh_out
+    
+    LOAD value,tuh_saj ; sajalised
+    AND value,$0F
+    OUT value,saj_out
+    
+    LOAD value,kym_yhe ; kümnelised
+    AND value,$F0
+    COMP value,0 ; kui on suurem nullist, tuleks bitid õigesse kohta paigutada
+    CALL NZ,SHIFT_RIGHT_BY_FOUR
+    OUT value,kym_out
+    
+    LOAD value,kym_yhe ; ühelised
+    AND value,$0F
+    OUT value,yhe_out
+    
+    RET
+
+
+SHIFT_RIGHT_BY_FOUR: ; liigutab bitid 4 võrra paremale
+    SR0 value
+    SR0 value
+    SR0 value
+    SR0 value
+    RET
+
+
+ORG $3FF
+JUMP ISR
+
