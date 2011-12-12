@@ -40,13 +40,18 @@ RETI ENABLE
 
 
 DIVISION:
-    LOAD count,0 ; count iterations
+    LOAD count,0
+    LOAD res0,0
+    LOAD res1,0
+    LOAD res2,0
+    LOAD res3,0
 
     DIV_PREPARE:
-        LOAD temp0,op20
+        LOAD temp0,op21
         COMP temp0,$80
         JUMP NC,DIV_ENTER_LOOP
         SL0 op20
+        SLA op21
         ADD count,1
     JUMP DIV_PREPARE
 
@@ -56,23 +61,30 @@ DIVISION:
         RET
         
     DIV_LOOP:
-        COMP op20,op10 ; compare operands
+        COMP op21,op11 ; compare operands
+        JUMP NZ,DIV_LOOP_SKIP
+        COMP op20,op10
+        DIV_LOOP_SKIP:
         JUMP C,DIV_OP2_SMALLER
         JUMP DIV_OP2_BIGGER
         CONTINUE_DIV_LOOP:
             COMP count,0
             RET Z
-            SR0 op2
+            SR0 op21
+            SRA op20
             SUB count,1
     JUMP DIV_LOOP
 
     DIV_OP2_SMALLER:
         SUB op10,op20
+        SUBC op11,op21
         SL1 res0
+        SLA res1
         JUMP CONTINUE_DIV_LOOP
 
     DIV_OP2_BIGGER:
         SL0 res0
+        SLA res1
         JUMP CONTINUE_DIV_LOOP
 
 
