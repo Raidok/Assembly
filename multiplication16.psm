@@ -24,7 +24,7 @@ EINT
 
 
 MAIN:
-	JUMP MAIN
+    JUMP MAIN
 
 
 ISR:
