@@ -19,6 +19,7 @@ ISR:
     IN op1,op1_in
     IN op2,op2_in
     CALL DIVISION
+    OUT result,res_out
     RETI ENABLE
 
 
@@ -34,18 +35,20 @@ DIVISION:
     JUMP DIV_PREPARE
 	
     DIV_ENTER_LOOP:
-        ADD count,1
-        DIV_LOOP:
+        CALL DIV_LOOP
+        ADD result,1
+        RET
+        
+    DIV_LOOP:
         COMP op2,op1 ; if op1 < op2
         JUMP C,DIV_OP2_SMALLER
         JUMP DIV_OP2_BIGGER
         CONTINUE_DIV_LOOP:
+            COMP count,0 ; check for the end
+            RET Z
             SR0 op2
-            OUT result,res_out ; debug
             SUB count,1
-        COMP count,0
-                RET Z
-        JUMP DIV_LOOP
+    JUMP DIV_LOOP
 	
     DIV_OP2_SMALLER:
         SUB op1,op2
