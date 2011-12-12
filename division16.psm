@@ -51,24 +51,27 @@ DIVISION:
     JUMP DIV_PREPARE
 
     DIV_ENTER_LOOP:
-        ADD count,1
-        DIV_LOOP:
-            COMP op20,op10 ; compare operands
-            JUMP NC,DIV_OP2_NOT_LESS
-            JUMP DIV_OP2_LESS
-            CONTINUE_DIV_LOOP:
-                OUT res0,res0_out ; debug
-                SUB count,1
-                COMP count,0
-                RET Z
+        CALL DIV_LOOP
+        ADD res0,1
+        RET
+        
+    DIV_LOOP:
+        COMP op20,op10 ; compare operands
+        JUMP C,DIV_OP2_SMALLER
+        JUMP DIV_OP2_BIGGER
+        CONTINUE_DIV_LOOP:
+            COMP count,0
+            RET Z
+            SR0 op2
+            SUB count,1
     JUMP DIV_LOOP
 
-    DIV_OP2_LESS:
+    DIV_OP2_SMALLER:
         SUB op10,op20
         SL1 res0
         JUMP CONTINUE_DIV_LOOP
 
-    DIV_OP2_NOT_LESS:
+    DIV_OP2_BIGGER:
         SL0 res0
         JUMP CONTINUE_DIV_LOOP
 
