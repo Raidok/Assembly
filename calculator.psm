@@ -63,155 +63,155 @@ MAIN: ; wait cycle
 ISR: ; handles interrupts
     LOAD counter,0 ; counter to zero
     OUT counter,DEBUG_OUT ; dbg output to zero
-	IN temp0,KEYBOARD_IN
-	JUMP KEYCODE_ACTION
-	ISR_OUT:
-        RETI ENABLE
+    IN temp0,KEYBOARD_IN
+    JUMP KEYCODE_ACTION
+    ISR_OUT:
+RETI ENABLE
 
 
 PRESSED_NUMBER: ; handles numbers
-	ADD temp1,$80 ; dbg
-	OUT temp1,DEBUG_OUT
-	JUMP ISR_OUT
+    ADD temp1,$80 ; dbg
+    OUT temp1,DEBUG_OUT
+    JUMP ISR_OUT
 
 
 PRESSED_SYMBOL: ; handles symbols
-	ADD temp1,$40 ; dbg
-	OUT temp1,DEBUG_OUT
-	JUMP ISR_OUT
+    ADD temp1,$40 ; dbg
+    OUT temp1,DEBUG_OUT
+    JUMP ISR_OUT
 
 
 CALCULATE: ; handles ENTER key
-	ADD temp1,$20 ; dbg
-	OUT temp1,DEBUG_OUT
+    ADD temp1,$20 ; dbg
+    OUT temp1,DEBUG_OUT
     JUMP ISR_OUT
 
 
 CLEAR: ; handles ESC key
-	LOAD temp1,$10 ; dbg
-	OUT temp1,DEBUG_OUT
-	JUMP ISR_OUT
+    LOAD temp1,$10 ; dbg
+    OUT temp1,DEBUG_OUT
+    JUMP ISR_OUT
 
 
 KEYCODE_ACTION: ; translates keycodes to actions
 
-	;GROUP_0:
-	COMP temp0,$70
-	JUMP NC,GROUP_1
+    GROUP_0:
+    COMP temp0,$70
+    JUMP NC,GROUP_1
 
-	    ;GROUP_0_0:
-	    COMP temp0,DIV
-	    JUMP NZ,GROUP_0_1
-	    LOAD temp1,IMG_DIV
-	    JUMP PRESSED_SYMBOL
+        ;GROUP_0_0:
+        COMP temp0,DIV
+        JUMP NZ,GROUP_0_1
+        LOAD temp1,IMG_DIV
+        JUMP PRESSED_SYMBOL
 
-	    GROUP_0_1:
-	    COMP temp0,ENT
-	    JUMP NZ,GROUP_0_2
-	    JUMP CALCULATE
+        GROUP_0_1:
+        COMP temp0,ENT
+        JUMP NZ,GROUP_0_2
+        JUMP CALCULATE
 
-		GROUP_0_2:
-	    COMP temp0,NUM_1
-	    JUMP NZ,GROUP_0_3
-	    LOAD temp1,1
-	    JUMP PRESSED_NUMBER
+        GROUP_0_2:
+        COMP temp0,NUM_1
+        JUMP NZ,GROUP_0_3
+        LOAD temp1,1
+        JUMP PRESSED_NUMBER
 
-	    GROUP_0_3:
-	    COMP temp0,NUM_4
-	    JUMP NZ,GROUP_0_4
-	    LOAD temp1,4
-	    JUMP PRESSED_NUMBER
+        GROUP_0_3:
+        COMP temp0,NUM_4
+        JUMP NZ,GROUP_0_4
+        LOAD temp1,4
+        JUMP PRESSED_NUMBER
 
-	    GROUP_0_4:
-	    COMP temp0,NUM_7
-	    JUMP NZ,GROUP_1
-	    LOAD temp1,7
-	    JUMP PRESSED_NUMBER
+        GROUP_0_4:
+        COMP temp0,NUM_7
+        JUMP NZ,GROUP_1
+        LOAD temp1,7
+        JUMP PRESSED_NUMBER
 
-	GROUP_1:
-	COMP temp0,$75
-	JUMP NC,GROUP_2
+    GROUP_1:
+    COMP temp0,$75
+    JUMP NC,GROUP_2
 
-	    ;GROUP_1_0
-	    COMP temp0,NUM_0
-	    JUMP NZ,GROUP_1_1
-	    LOAD temp1,0
-	    JUMP PRESSED_NUMBER
+        ;GROUP_1_0
+        COMP temp0,NUM_0
+        JUMP NZ,GROUP_1_1
+        LOAD temp1,0
+        JUMP PRESSED_NUMBER
 
-	    GROUP_1_1:
-	    COMP temp0,SPEC
-	    JUMP NZ,GROUP_1_2
-	    LOAD temp1,IMG_POINT
-	    JUMP PRESSED_SYMBOL
+        GROUP_1_1:
+        COMP temp0,SPEC
+        JUMP NZ,GROUP_1_2
+        LOAD temp1,IMG_POINT
+        JUMP PRESSED_SYMBOL
 
-	    GROUP_1_2:
-	    COMP temp0,NUM_2
-	    JUMP NZ,GROUP_1_3
-	    LOAD temp1,2
-	    JUMP PRESSED_NUMBER
+        GROUP_1_2:
+        COMP temp0,NUM_2
+        JUMP NZ,GROUP_1_3
+        LOAD temp1,2
+        JUMP PRESSED_NUMBER
 
-	    GROUP_1_3:
-	    COMP temp0,NUM_5
-	    JUMP NZ,GROUP_1_4
-	    LOAD temp1,5
-	    JUMP PRESSED_NUMBER
+        GROUP_1_3:
+        COMP temp0,NUM_5
+        JUMP NZ,GROUP_1_4
+        LOAD temp1,5
+        JUMP PRESSED_NUMBER
 
-	    GROUP_1_4:
-	    COMP temp0,NUM_6
-	    JUMP NZ,GROUP_2
-	    LOAD temp1,6
-	    JUMP PRESSED_NUMBER
+        GROUP_1_4:
+        COMP temp0,NUM_6
+        JUMP NZ,GROUP_2
+        LOAD temp1,6
+        JUMP PRESSED_NUMBER
 
-	GROUP_2:
-	COMP temp0,$7B
-	JUMP NC,GROUP_3
+    GROUP_2:
+    COMP temp0,$7B
+    JUMP NC,GROUP_3
 
-	    ;GROUP_2_0:
-	    COMP temp0,NUM_8
-	    JUMP NZ,GROUP_2_1
-	    LOAD temp1,8
-	    JUMP PRESSED_NUMBER
+        ;GROUP_2_0:
+        COMP temp0,NUM_8
+        JUMP NZ,GROUP_2_1
+        LOAD temp1,8
+        JUMP PRESSED_NUMBER
 
-	    GROUP_2_1:
-	    COMP temp0,ESC
-	    JUMP NZ,GROUP_2_2
-	    JUMP CLEAR
+        GROUP_2_1:
+        COMP temp0,ESC
+        JUMP NZ,GROUP_2_2
+        JUMP CLEAR
 
-	    GROUP_2_2:
-	    COMP temp0,PLUS
-	    JUMP NZ,GROUP_2_3
-	    LOAD temp1,IMG_PLUS
-	    JUMP PRESSED_SYMBOL
+        GROUP_2_2:
+        COMP temp0,PLUS
+        JUMP NZ,GROUP_2_3
+        LOAD temp1,IMG_PLUS
+        JUMP PRESSED_SYMBOL
 
-	    GROUP_2_3:
-	    COMP temp0,NUM_3
-	    JUMP NZ,GROUP_3
-	    LOAD temp1,3
-	    JUMP PRESSED_NUMBER
+        GROUP_2_3:
+        COMP temp0,NUM_3
+        JUMP NZ,GROUP_3
+        LOAD temp1,3
+        JUMP PRESSED_NUMBER
 
-	GROUP_3:
-	COMP temp0,$7E
-	JUMP NC,ISR_OUT ; if key isn't mapped, exit
+    GROUP_3:
+    COMP temp0,$7E
+    JUMP NC,ISR_OUT ; if key isn't mapped, exit
 
-	    ;GROUP_3_0:
-	    COMP temp0,MINUS
-	    JUMP NZ,GROUP_3_1
-	    LOAD temp1,IMG_MINUS
-	    JUMP PRESSED_SYMBOL
+        ;GROUP_3_0:
+        COMP temp0,MINUS
+        JUMP NZ,GROUP_3_1
+        LOAD temp1,IMG_MINUS
+        JUMP PRESSED_SYMBOL
 
-	    GROUP_3_1:
-	    COMP temp0,MULT
-	    JUMP NZ,GROUP_3_2
-	    LOAD temp1,IMG_MULT
-	    JUMP PRESSED_SYMBOL
+        GROUP_3_1:
+        COMP temp0,MULT
+        JUMP NZ,GROUP_3_2
+        LOAD temp1,IMG_MULT
+        JUMP PRESSED_SYMBOL
 
-		GROUP_3_2:
-	    COMP temp0,NUM_9
-	    JUMP NZ,ISR_OUT
-		LOAD temp1,9
-	    JUMP PRESSED_NUMBER
+        GROUP_3_2:
+        COMP temp0,NUM_9
+        JUMP NZ,ISR_OUT
+        LOAD temp1,9
+        JUMP PRESSED_NUMBER
 
-	JUMP ISR_OUT ; if key isn't mapped, exit
+    JUMP ISR_OUT ; if key isn't mapped, exit
 
 ; KEYCODE_ACTION end
 
