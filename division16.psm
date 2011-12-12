@@ -18,58 +18,59 @@ res1_out DSOUT 121
 res2_out DSOUT 122
 res3_out DSOUT 123
 
+
 EINT
 
 
 MAIN:
-	JUMP MAIN
+    JUMP MAIN
 
 
 ISR:
-	IN op10,op10_in
-	IN op11,op11_in
-	IN op20,op20_in
-	IN op21,op21_in
-	CALL DIVISION
-	OUT res0,res0_out
-	OUT res1,res1_out
-	OUT res2,res2_out
-	OUT res3,res3_out
+    IN op10,op10_in
+    IN op11,op11_in
+    IN op20,op20_in
+    IN op21,op21_in
+    CALL DIVISION
+    OUT res0,res0_out
+    OUT res1,res1_out
+    OUT res2,res2_out
+    OUT res3,res3_out
 RETI ENABLE
 
 
 DIVISION:
-	LOAD count,0 ; count iterations
-	
-	DIV_PREPARE:
-	    LOAD temp0,op20
-	    COMP temp0,$80
-	    JUMP NC,DIV_ENTER_LOOP
-	    SL0 op20
-	    ADD count,1
+    LOAD count,0 ; count iterations
+
+    DIV_PREPARE:
+        LOAD temp0,op20
+        COMP temp0,$80
+        JUMP NC,DIV_ENTER_LOOP
+        SL0 op20
+        ADD count,1
     JUMP DIV_PREPARE
-	
-	DIV_ENTER_LOOP:
-	    ADD count,1
-	    DIV_LOOP:
-	        COMP op20,op10 ; compare operands
-	        JUMP NC,DIV_OP2_NOT_LESS
-	        JUMP DIV_OP2_LESS
-	        CONTINUE_DIV_LOOP:
-	            OUT res0,res0_out ; debug
-	            SUB count,1
-	            COMP count,0
-	            RET Z
-        JUMP DIV_LOOP
-	
-	DIV_OP2_LESS:
-	    SUB op10,op20
-	    SL1 res0
-	    JUMP CONTINUE_DIV_LOOP
-	
-	DIV_OP2_NOT_LESS:
-	    SL0 res0
-	    JUMP CONTINUE_DIV_LOOP
+
+    DIV_ENTER_LOOP:
+        ADD count,1
+        DIV_LOOP:
+            COMP op20,op10 ; compare operands
+            JUMP NC,DIV_OP2_NOT_LESS
+            JUMP DIV_OP2_LESS
+            CONTINUE_DIV_LOOP:
+                OUT res0,res0_out ; debug
+                SUB count,1
+                COMP count,0
+                RET Z
+    JUMP DIV_LOOP
+
+    DIV_OP2_LESS:
+        SUB op10,op20
+        SL1 res0
+        JUMP CONTINUE_DIV_LOOP
+
+    DIV_OP2_NOT_LESS:
+        SL0 res0
+        JUMP CONTINUE_DIV_LOOP
 
 
 ORG $3FF
