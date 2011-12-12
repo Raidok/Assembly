@@ -1,7 +1,5 @@
 op10	  EQU	 s8;	1st operand LSB
 op11	  EQU 	 s0;	1st operand MSB
-op12      EQU    s2;    1st operand's backup 1
-op13      EQU    s3;    1st operand's backup 2
 op20	  EQU	 s9;	2nd operand LSB
 op21	  EQU	 s1;	2nd operand MSB
 res0	  EQU	 sF;	result register byte 0
@@ -48,8 +46,6 @@ MULTIPLICATION:
 	LOAD res1,0
 	LOAD res2,0
 	LOAD res3,0
-	LOAD op12,0
-	LOAD op13,0
 	
 	MULT_LOOP:
 	    COMP count,9
@@ -59,16 +55,14 @@ MULTIPLICATION:
 	        AND temp1, temp0
 	        COMP temp1, temp0
 	        JUMP NZ,MULT_LOOP_CONTINUE
-            ADD res0,op10
-	        ADDC res1,op11
-	        ADDC res2,op12
-	        ADDC res3,op13
+            ADD res2,op10
+	        ADDC res3,op11
     	    MULT_LOOP_CONTINUE:
     	
-	            SL0 op10
-	            SLA op11
-	            SLA op12
-	            SLA op13
+	            SR0 res3
+	            SRA res2
+	            SRA res1
+	            SRA res0
 	            
     	        OUT res0,res0_out ; debug
     	        OUT res1,res1_out ; debug
