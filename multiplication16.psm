@@ -55,22 +55,34 @@ MULTIPLICATION:
 	    COMP count,9
 	    JUMP C,MULT_MSB
 	    JUMP MULT_LSB
-
-	    MULT_LOOP_CONTINUE:
-	    
-	        OUT res0,res0_out ; debug
-	        OUT res1,res1_out ; debug
-        	OUT res2,res2_out ; debug
-        	OUT res3,res3_out ; debug
-	        
-	        SL0 temp0 ; shift mask left
-	        SUB count,1 ; subtract 1 from count
-	        
-	        COMP count,8
-	        CALL Z,MULT_RESET
-	        
-	        COMP count,0 ; is count 0 yet?
-        RET Z ; if count == 0, return
+	    MULT_LOOP_DECISION:
+	        AND temp1, temp0
+	        COMP temp1, temp0
+	        JUMP NZ,MULT_LOOP_CONTINUE
+            ADD res0,op10
+	        ADDC res1,op11
+	        ADDC res2,op12
+	        ADDC res3,op13
+    	    MULT_LOOP_CONTINUE:
+    	
+	            SL0 op10
+	            SLA op11
+	            SLA op12
+	            SLA op13
+	            
+    	        OUT res0,res0_out ; debug
+    	        OUT res1,res1_out ; debug
+            	OUT res2,res2_out ; debug
+            	OUT res3,res3_out ; debug
+    	
+    	        SL0 temp0 ; shift mask left
+    	        SUB count,1 ; subtract 1 from count
+    	
+    	        COMP count,8
+    	        CALL Z,MULT_RESET
+    	
+    	        COMP count,0 ; is count 0 yet?
+            RET Z ; if count == 0, return
     JUMP MULT_LOOP
     
     MULT_RESET:
@@ -79,35 +91,11 @@ MULTIPLICATION:
 	    
 	MULT_LSB:
 	    LOAD temp1, op20
-	    AND temp1, temp0
-	    COMP temp1, temp0
-	    JUMP NZ, MULT_LSB_CONTINUE
-	    ADD res0,op10
-	    ADDC res1,op11
-	    ADDC res2,op12
-	    ADDC res3,op13
-	    MULT_LSB_CONTINUE:
-	        SL0 op10 ; shift op1 lsb left
-	        SLA op11 ; shift op1 msb left, carry in
-	        SLA op12
-	        SLA op13
-    JUMP MULT_LOOP_CONTINUE
+    JUMP MULT_LOOP_DECISION
 	
 	MULT_MSB:
 	    LOAD temp1, op21
-	    AND temp1, temp0
-	    COMP temp1, temp0
-	    JUMP NZ, MULT_MSB_CONTINUE
-	    ADD res0,op10
-	    ADDC res1,op11
-	    ADDC res2,op12
-	    ADDC res3,op13
-	    MULT_MSB_CONTINUE: ; for now, lsb of op1 are unused so I reuse it
-	        SL0 op10
-	        SLA op11
-	        SLA op12
-	        SLA op13
-    JUMP MULT_LOOP_CONTINUE
+    JUMP MULT_LOOP_DECISION
 
 
 ORG $3FF
