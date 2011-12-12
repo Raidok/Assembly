@@ -19,6 +19,7 @@ res1_out DSOUT 121
 res2_out DSOUT 122
 res3_out DSOUT 123
 
+
 EINT
 
 
@@ -27,15 +28,15 @@ MAIN:
 
 
 ISR:
-	IN op10,op10_in
-	IN op11,op11_in
-	IN op20,op20_in
-	IN op21,op21_in
-	CALL MULTIPLICATION
-	OUT res0,res0_out
-	OUT res1,res1_out
-	OUT res2,res2_out
-	OUT res3,res3_out
+    IN op10,op10_in
+    IN op11,op11_in
+    IN op20,op20_in
+    IN op21,op21_in
+    CALL MULTIPLICATION
+    OUT res0,res0_out
+    OUT res1,res1_out
+    OUT res2,res2_out
+    OUT res3,res3_out
 RETI ENABLE
 
 
@@ -46,7 +47,7 @@ MULTIPLICATION:
 	LOAD res1,0
 	LOAD res2,0
 	LOAD res3,0
-	
+
 	MULT_LOOP:
 	    COMP count,9
 	    JUMP C,MULT_LOAD_MSB
@@ -55,35 +56,35 @@ MULTIPLICATION:
 	        AND temp1, temp0
 	        COMP temp1, temp0
 	        JUMP NZ,MULT_LOOP_CONTINUE
-            ADD res2,op10
+                ADD res2,op10
 	        ADDC res3,op11
-    	    MULT_LOOP_CONTINUE:
-    	
-	            SR0 res3 ; instead of shifting op1 left, I shift res to the right
-	            SRA res2
-	            SRA res1
-	            SRA res0
-    	
-    	        COMP count,1 ; because it's before subtraction happens, check for 1
-                RET Z ; if count == 1, return
-                
-    	        SL0 temp0 ; shift mask left
-    	        SUB count,1 ; subtract 1 from count
-    	
-    	        COMP count,8
-    	        CALL Z,MULT_RESET_MASK
-    JUMP MULT_LOOP
-    
+    	        MULT_LOOP_CONTINUE:
+
+                    SR0 res3 ; instead of shifting op1 left, I shift res to the right
+                    SRA res2
+                    SRA res1
+                    SRA res0
+
+    	            COMP count,1 ; because it's before subtraction happens, check for 1
+                    RET Z ; if count == 1, return
+
+    	            SL0 temp0 ; shift mask left
+    	            SUB count,1 ; subtract 1 from count
+
+    	            COMP count,8
+    	            CALL Z,MULT_RESET_MASK
+        JUMP MULT_LOOP
+
     MULT_RESET_MASK:
-	    LOAD temp0,1
+        LOAD temp0,1
     RET
-	    
-	MULT_LOAD_LSB:
-	    LOAD temp1, op20
+
+    MULT_LOAD_LSB:
+        LOAD temp1, op20
     JUMP MULT_LOOP_DECISION
-	
-	MULT_LOAD_MSB:
-	    LOAD temp1, op21
+
+    MULT_LOAD_MSB:
+        LOAD temp1, op21
     JUMP MULT_LOOP_DECISION
 
 
