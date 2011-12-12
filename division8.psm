@@ -40,6 +40,7 @@ DIVISION:
 	        JUMP NC,DIV_OP2_NOT_LESS
 	        JUMP DIV_OP2_LESS
 	        CONTINUE_DIV_LOOP:
+	            SR0 op2
 	            OUT result,res_out ; debug
 	            SUB count,1
 	            COMP count,0
