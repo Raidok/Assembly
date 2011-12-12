@@ -12,49 +12,49 @@ EINT
 
 
 MAIN:
-	JUMP MAIN
+    JUMP MAIN
 
 
 ISR:
-	IN op1,op1_in
-	IN op2,op2_in
-	CALL DIVISION
-	RETI ENABLE
+    IN op1,op1_in
+    IN op2,op2_in
+    CALL DIVISION
+    RETI ENABLE
 
 
 DIVISION:
-	LOAD count,0 ; count iterations
-	
-	DIV_PREPARE:
-	    LOAD temp,op2
-	    COMP temp,$80
-	    JUMP NC,DIV_ENTER_LOOP
-	    SL0 op2
-	    ADD count,1
+    LOAD count,0 ; count iterations
+
+    DIV_PREPARE:
+        LOAD temp,op2
+        COMP temp,$80
+        JUMP NC,DIV_ENTER_LOOP
+        SL0 op2
+        ADD count,1
     JUMP DIV_PREPARE
 	
-	DIV_ENTER_LOOP:
-	    ADD count,1
-	    DIV_LOOP:
-	        COMP op2,op1 ; if op1 < op2
-	        JUMP C,DIV_OP2_SMALLER
-	        JUMP DIV_OP2_BIGGER
-	        CONTINUE_DIV_LOOP:
-	            SR0 op2
-	            OUT result,res_out ; debug
-	            SUB count,1
-	            COMP count,0
-	            RET Z
+    DIV_ENTER_LOOP:
+        ADD count,1
+        DIV_LOOP:
+        COMP op2,op1 ; if op1 < op2
+        JUMP C,DIV_OP2_SMALLER
+        JUMP DIV_OP2_BIGGER
+        CONTINUE_DIV_LOOP:
+            SR0 op2
+            OUT result,res_out ; debug
+            SUB count,1
+        COMP count,0
+                RET Z
         JUMP DIV_LOOP
 	
-	DIV_OP2_SMALLER:
-	    SUB op1,op2
-	    SL1 result
-	    JUMP CONTINUE_DIV_LOOP
+    DIV_OP2_SMALLER:
+        SUB op1,op2
+        SL1 result
+    JUMP CONTINUE_DIV_LOOP
 	
-	DIV_OP2_BIGGER:
-	    SL0 result
-	    JUMP CONTINUE_DIV_LOOP
+    DIV_OP2_BIGGER:
+        SL0 result
+    JUMP CONTINUE_DIV_LOOP
 
 
 ORG $3FF
