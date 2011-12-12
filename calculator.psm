@@ -11,9 +11,6 @@ temp0	  EQU	 s4;	temporary storage
 temp1	  EQU	 s5;	temporary storage
 count	  EQU	 s6;	symbol counter
 
-; CONSTANTS
-; SCRATCH_PAD_ADDRESSES
-
 ; SORTED BUTTON CODES
 DIV		  EQU	 $4A
 ENT		  EQU	 $5A
@@ -48,6 +45,19 @@ IMG_BLANK	 EQU $0F
 KEYBOARD_IN	 DSIO $80
 DEBUG_OUT 	 DSOUT $81
 
+; SCREEN AREAS
+scr_in_1     DSIO 42
+scr_in_2     DSIO 43
+scr_in_3     DSIO 44
+scr_in_4     DSIO 45
+scr_out_1    DSOUT 62
+scr_out_2    DSOUT 63
+scr_out_3    DSOUT 64
+scr_out_4    DSOUT 65
+
+; temporary storage
+storx1   DSIO 101
+storx2   DSIO 102
 
 
 ; implement: ARCTAN!!!
@@ -56,13 +66,17 @@ DEBUG_OUT 	 DSOUT $81
 
 EINT ; enable interrupts
 
+
+CALL RESET_DISPLAY; reset display
+
+
 MAIN: ; wait cycle
     JUMP MAIN
 
 
 ISR: ; handles interrupts
-    LOAD counter,0 ; counter to zero
-    OUT counter,DEBUG_OUT ; dbg output to zero
+    LOAD count,0 ; counter to zero
+    OUT count,DEBUG_OUT ; dbg output to zero
     IN temp0,KEYBOARD_IN
     JUMP KEYCODE_ACTION
     ISR_OUT:
@@ -70,8 +84,11 @@ RETI ENABLE
 
 
 PRESSED_NUMBER: ; handles numbers
-    ADD temp1,$80 ; dbg
-    OUT temp1,DEBUG_OUT
+    IN temp0,scr_in_3
+    OUT temp0,scr_in_1
+    IN temp0,scr_in_4
+    OUT temp0,scr_in_3
+    OUT temp1,scr_in_4
     JUMP ISR_OUT
 
 
@@ -84,14 +101,30 @@ PRESSED_SYMBOL: ; handles symbols
 CALCULATE: ; handles ENTER key
     ADD temp1,$20 ; dbg
     OUT temp1,DEBUG_OUT
+    CALL MAKE_X
+    CALL ARCTAN
     JUMP ISR_OUT
 
 
 CLEAR: ; handles ESC key
     LOAD temp1,$10 ; dbg
     OUT temp1,DEBUG_OUT
+    CALL RESET_DISPLAY
     JUMP ISR_OUT
 
+RESET_DISPLAY:
+    LOAD temp0,0 ; zero
+    OUT count,scr_in_1
+    OUT count,scr_in_3
+    OUT count,scr_in_4
+    LOAD temp0,IMG_POINT ; point sign
+    OUT temp0,scr_in_2
+    LOAD temp0,$F ; whitespace
+    OUT temp0,scr_out_1
+    OUT temp0,scr_out_2
+    OUT temp0,scr_out_3
+    OUT temp0,scr_out_4
+    RET
 
 KEYCODE_ACTION: ; translates keycodes to actions
 
@@ -216,6 +249,146 @@ KEYCODE_ACTION: ; translates keycodes to actions
 ; KEYCODE_ACTION end
 
 
+; ------------------------------------------------------------------------------
+; make x from input:
+
+
+MAKE_X:
+    IN temp0,scr_in_1
+    OUT temp0,storx1
+
+    IN op11,scr_in_3
+    LOAD op10,0
+    LOAD op21,10
+    LOAD op20,0
+    CALL DIVISION
+    LOAD temp1,res0
+
+    IN op11,scr_in_4
+    LOAD op10,0
+    LOAD op21,100
+    LOAD op20,0
+    CALL DIVISION
+    ADD temp1,res0
+    
+    OUT temp1,storx2
+    RET
+
+
+; ------------------------------------------------------------------------------
+; ARCTAN:
+
+
+ARCTAN:
+    RET
+
+
+; ------------------------------------------------------------------------------
+; DIVISION:
+
+
+DIVISION:
+    LOAD count,0
+    LOAD res0,0
+    LOAD res1,0
+    LOAD res2,0
+    LOAD res3,0
+
+    DIV_PREPARE:
+        LOAD temp0,op21
+        COMP temp0,$80
+        JUMP NC,DIV_ENTER_LOOP
+        SL0 op20
+        SLA op21
+        ADD count,1
+    JUMP DIV_PREPARE
+
+    DIV_ENTER_LOOP:
+        CALL DIV_LOOP
+        ADD res0,1
+        RET
+
+    DIV_LOOP:
+        COMP op21,op11 ; compare operands
+        JUMP NZ,DIV_LOOP_SKIP
+        COMP op20,op10
+        DIV_LOOP_SKIP:
+        JUMP C,DIV_OP2_SMALLER
+        JUMP DIV_OP2_BIGGER
+        CONTINUE_DIV_LOOP:
+            COMP count,0
+            RET Z
+            SR0 op21
+            SRA op20
+            SUB count,1
+    JUMP DIV_LOOP
+
+    DIV_OP2_SMALLER:
+        SUB op10,op20
+        SUBC op11,op21
+        SL1 res0
+        SLA res1
+        JUMP CONTINUE_DIV_LOOP
+
+    DIV_OP2_BIGGER:
+        SL0 res0
+        SLA res1
+        JUMP CONTINUE_DIV_LOOP
+
+
+; ------------------------------------------------------------------------------
+; MULTIPLICATION:
+
+
+MULTIPLICATION:
+	LOAD count,16 ; number of bits
+	CALL MULT_RESET_MASK
+	LOAD res0,0
+	LOAD res1,0
+	LOAD res2,0
+	LOAD res3,0
+
+	MULT_LOOP:
+	    COMP count,9
+	    JUMP C,MULT_LOAD_MSB
+	    JUMP MULT_LOAD_LSB
+	    MULT_LOOP_DECISION:
+	        AND temp1, temp0
+	        COMP temp1, temp0
+	        JUMP NZ,MULT_LOOP_CONTINUE
+                ADD res2,op10
+	        ADDC res3,op11
+    	        MULT_LOOP_CONTINUE:
+
+                    SR0 res3 ; instead of shifting op1 left, I shift res to the right
+                    SRA res2
+                    SRA res1
+                    SRA res0
+
+    	            COMP count,1 ; because it's before subtraction happens, check for 1
+                    RET Z ; if count == 1, return
+
+    	            SL0 temp0 ; shift mask left
+    	            SUB count,1 ; subtract 1 from count
+
+    	            COMP count,8
+    	            CALL Z,MULT_RESET_MASK
+        JUMP MULT_LOOP
+
+    MULT_RESET_MASK:
+        LOAD temp0,1
+    RET
+
+    MULT_LOAD_LSB:
+        LOAD temp1, op20
+    JUMP MULT_LOOP_DECISION
+
+    MULT_LOAD_MSB:
+        LOAD temp1, op21
+    JUMP MULT_LOOP_DECISION
+
+
+; ------------------------------------------------------------------------------
 
 
 ORG $3FF ; in case of interruptions
