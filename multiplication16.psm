@@ -48,6 +48,8 @@ MULTIPLICATION:
 	LOAD res1,0
 	LOAD res2,0
 	LOAD res3,0
+	LOAD op12,0
+	LOAD op13,0
 	
 	MULT_LOOP:
 	    COMP count,9
