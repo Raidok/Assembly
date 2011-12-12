@@ -66,7 +66,6 @@ stor21   DSIO 104
 ; implement: ARCTAN!!!
 
 
-
 EINT ; enable interrupts
 
 
@@ -86,10 +85,8 @@ ISR: ; handles interrupts
 RETI ENABLE
 
 
-
 ; ------------------------------------------------------------------------------
 ; make x from input:
-
 
 MAKE_X:
     IN temp0,scr_in_1
@@ -97,16 +94,12 @@ MAKE_X:
 
     IN op11,scr_in_3
     LOAD op10,0
-    LOAD op21,10
-    LOAD op20,0
-    CALL DIVISION
+    CALL DIVIDE_BY_10
     LOAD temp2,res0
 
     IN op11,scr_in_4
     LOAD op10,0
-    LOAD op21,100
-    LOAD op20,0
-    CALL DIVISION
+    CALL DIVIDE_BY_100
     ADD temp2,res0
 
     OUT temp2,storx0
@@ -114,34 +107,28 @@ MAKE_X:
 
 
 ; ------------------------------------------------------------------------------
-; draw result to display
-
+; draw result to display:
 
 DRAW_RESULT:
-	OUT res2,scr_out_1 ; 10^0
+	OUT res1,scr_out_1 ; 10^0
 	
 	IN temp0,IMG_POINT
 	OUT temp0,scr_out_2 ; point
 	
 	LOAD op10,res0
 	LOAD op11,0
-	LOAD op20,0
-	LOAD op21,10
-	CALL MULTIPLICATION
+	CALL MULTIPLY_BY_10
 	OUT res1,scr_out_3 ; 10^-1
 	
 	LOAD op10,res0
 	LOAD op11,0
-	LOAD op20,0
-	LOAD op21,10
-	CALL MULTIPLICATION
+	CALL MULTIPLY_BY_10
 	OUT res1,scr_out_4 ; 10^-2
 	RET
 
 
 ; ------------------------------------------------------------------------------
-; ARCTAN:
-
+; arctan:
 
 ARCTAN:
 
@@ -151,8 +138,7 @@ ARCTAN:
 ; ------------------------------------------------------------------------------
 ; square:
 
-
-SQUARE: ; fill in op10 and op11, call it and get the result
+SQUARE: ; fill in op10 and op11, call it and get the result afterwards
 	LOAD op20,op10
 	LOAD op21,op11
 	CALL MULTIPLICATION
@@ -160,8 +146,37 @@ SQUARE: ; fill in op10 and op11, call it and get the result
 
 
 ; ------------------------------------------------------------------------------
-; DIVISION:
+; multiply by ten
 
+MULTIPLY_BY_10: ; fill in op10 and op11, call it and get the result afterwards
+    LOAD op21,10
+    LOAD op20,0
+    CALL MULTIPLICATION
+    RET
+    
+
+; ------------------------------------------------------------------------------
+; devide by ten
+
+DIVIDE_BY_10: ; fill in op10 and op11, call it and get the result afterwards
+    LOAD op21,0
+    LOAD op20,10
+    CALL DIVISION
+    RET
+    
+    
+; ------------------------------------------------------------------------------
+; devide by ten
+
+DIVIDE_BY_100: ; fill in op10 and op11, call it and get the result afterwards
+    LOAD op21,0
+    LOAD op20,100
+    CALL DIVISION
+    RET
+
+
+; ------------------------------------------------------------------------------
+; division:
 
 DIVISION:
     LOAD count,0
@@ -173,16 +188,11 @@ DIVISION:
     DIV_PREPARE:
         LOAD temp0,op21
         COMP temp0,$80
-        JUMP NC,DIV_ENTER_LOOP
+        JUMP NC,DIV_LOOP
         SL0 op20
         SLA op21
         ADD count,1
     JUMP DIV_PREPARE
-
-    DIV_ENTER_LOOP:
-        CALL DIV_LOOP
-        ADD res0,1
-        RET
 
     DIV_LOOP:
         COMP op21,op11 ; compare operands
@@ -213,8 +223,7 @@ DIVISION:
 
 
 ; ------------------------------------------------------------------------------
-; MULTIPLICATION:
-
+; multiplication:
 
 MULTIPLICATION:
 	LOAD count,16 ; number of bits
@@ -266,7 +275,6 @@ MULTIPLICATION:
 
 ; ------------------------------------------------------------------------------
 ; handling keypresses:
-
 
 PRESSED_NUMBER: ; handles numbers
     IN temp0,scr_in_3
