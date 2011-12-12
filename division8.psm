@@ -37,8 +37,8 @@ DIVISION:
 	    ADD count,1
 	    DIV_LOOP:
 	        COMP op2,op1 ; if op1 < op2
-	        JUMP NC,DIV_OP2_NOT_LESS
-	        JUMP DIV_OP2_LESS
+	        JUMP C,DIV_OP2_SMALLER
+	        JUMP DIV_OP2_BIGGER
 	        CONTINUE_DIV_LOOP:
 	            SR0 op2
 	            OUT result,res_out ; debug
@@ -47,12 +47,12 @@ DIVISION:
 	            RET Z
         JUMP DIV_LOOP
 	
-	DIV_OP2_LESS:
+	DIV_OP2_SMALLER:
 	    SUB op1,op2
 	    SL1 result
 	    JUMP CONTINUE_DIV_LOOP
 	
-	DIV_OP2_NOT_LESS:
+	DIV_OP2_BIGGER:
 	    SL0 result
 	    JUMP CONTINUE_DIV_LOOP
 
