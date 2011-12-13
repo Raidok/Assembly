@@ -209,7 +209,7 @@ MULTIPLY_BY_10: ; fill in op10 and op11, call it and get the result afterwards
     LOAD op20,0
     CALL MULTIPLICATION
     RET
-    
+
 
 ; ------------------------------------------------------------------------------
 ; devide by ten
@@ -217,16 +217,6 @@ MULTIPLY_BY_10: ; fill in op10 and op11, call it and get the result afterwards
 DIVIDE_BY_10: ; fill in op10 and op11, call it and get the result afterwards
     LOAD op21,0
     LOAD op20,10
-    CALL DIVISION
-    RET
-    
-    
-; ------------------------------------------------------------------------------
-; devide by ten
-
-DIVIDE_BY_100: ; fill in op10 and op11, call it and get the result afterwards
-    LOAD op21,0
-    LOAD op20,100
     CALL DIVISION
     RET
 
