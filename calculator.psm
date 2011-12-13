@@ -57,10 +57,10 @@ scr_out_3    DSOUT 64
 scr_out_4    DSOUT 65
 
 ; temporary storage
-storx0   DSIO 101
-storx1   DSIO 102
-stor20   DSIO 103
-stor21   DSIO 104
+storx1   DSIO 101
+storx0   DSIO 102
+storv1   DSIO 103
+storv0   DSIO 104
 
 
 ; implement: ARCTAN!!!
@@ -110,28 +110,76 @@ MAKE_X:
 ; draw result to display:
 
 DRAW_RESULT:
-	OUT res1,scr_out_1 ; 10^0
+	OUT res3,scr_out_1 ; 10^0
 	
-	IN temp0,IMG_POINT
+	LOAD temp0,IMG_POINT
 	OUT temp0,scr_out_2 ; point
 	
-	LOAD op10,res0
+	LOAD op10,res2
 	LOAD op11,0
 	CALL MULTIPLY_BY_10
-	OUT res1,scr_out_3 ; 10^-1
+	OUT res2,scr_out_3 ; 10^-1
 	
-	LOAD op10,res0
+	LOAD op10,res1
 	LOAD op11,0
 	CALL MULTIPLY_BY_10
-	OUT res1,scr_out_4 ; 10^-2
+	OUT res2,scr_out_4 ; 10^-2
 	RET
 
 
 ; ------------------------------------------------------------------------------
-; arctan:
+; arctan: x - (x^3 / 3) + (x^5 / 5) = x * [1 - (x^2 / 3) + (x^4 / 5)]
 
 ARCTAN:
-
+    ; (x^2 / 3)
+    IN op10,storx0
+    IN op11,storx1
+    CALL SQUARE
+    ; divide by 3
+    LOAD op10,res0
+    LOAD op11,res1
+    LOAD op20,3
+    LOAD op21,0
+    CALL DIVISION
+    ; subtract it from 1
+    LOAD op10,0 ; let it underflow for accuracy
+    LOAD op11,0
+    LOAD op20,res0
+    LOAD op21,res1
+    CALL SUBTRACTION
+    ; save it for later
+    OUT res0,storv0
+    OUT res1,storv1
+    
+    ; (x^4 / 5)
+    IN op10,storx0
+    IN op11,storx1
+    CALL SQUARE ; x^2
+    CALL SQUARE_ROLL ; x^3
+    CALL SQUARE_ROLL ; x^4
+    ; divide by 5
+    LOAD op10,res1
+    LOAD op11,res2
+    LOAD op20,5
+    LOAD op21,0
+    CALL DIVISION
+    ; adding it to the value saved before
+    LOAD op10,res0
+    LOAD op11,res1
+    IN op20,storv0
+    IN op21,storv1
+    CALL ADDITION
+    
+    ; multiply by x
+    IN op10,storx0
+    IN op11,storx1
+    LOAD op20,res0
+    LOAD op21,res1
+    CALL MULTIPLICATION
+    
+    ; write result to the memory
+    OUT res0,storv0
+    OUT res1,storv1
     RET
 
 
@@ -143,6 +191,14 @@ SQUARE: ; fill in op10 and op11, call it and get the result afterwards
 	LOAD op21,op11
 	CALL MULTIPLICATION
 	RET
+
+SQUARE_ROLL:
+    IN op10,storx0
+    IN op11,storx1
+    LOAD op20,res0
+    LOAD op21,res1
+    CALL MULTIPLICATION
+    RET
 
 
 ; ------------------------------------------------------------------------------
@@ -174,6 +230,31 @@ DIVIDE_BY_100: ; fill in op10 and op11, call it and get the result afterwards
     CALL DIVISION
     RET
 
+
+; ------------------------------------------------------------------------------
+; subtraction:
+
+SUBTRACTION:
+    SUB op10,op20
+    SUBC op11,op21
+    LOAD res0,op10
+    LOAD res1,op11
+    LOAD res2,0
+    LOAD res3,0
+    RET
+
+
+; ------------------------------------------------------------------------------
+; addition:
+
+ADDITION:
+    ADD op10,op20
+    ADDC op11,op21
+    LOAD res0,op10
+    LOAD res1,op11
+    LOAD res2,0
+    LOAD res3,0
+    RET
 
 ; ------------------------------------------------------------------------------
 ; division:
