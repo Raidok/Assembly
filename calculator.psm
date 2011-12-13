@@ -212,7 +212,7 @@ MULTIPLY_BY_10: ; fill in op10 and op11, call it and get the result afterwards
 
 
 ; ------------------------------------------------------------------------------
-; devide by ten
+; divide by ten
 
 DIVIDE_BY_10: ; fill in op10 and op11, call it and get the result afterwards
     LOAD op21,0
