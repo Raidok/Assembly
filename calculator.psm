@@ -158,8 +158,8 @@ ARCTAN:
     CALL SQUARE_ROLL ; x^3
     CALL SQUARE_ROLL ; x^4
     ; divide by 5
-    LOAD op10,res1
-    LOAD op11,res2
+    LOAD op10,res2
+    LOAD op11,res3
     LOAD op20,5
     LOAD op21,0
     CALL DIVISION
