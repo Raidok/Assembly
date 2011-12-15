@@ -112,7 +112,7 @@ MAKE_X_1: ; exception for 1.00 :D
 ; draw result to display:
 
 DRAW_RESULT:
-	OUT res3,scr_out_1 ; 10^0
+	OUT res2,scr_out_1 ; 10^0
 	
 	LOAD temp0,IMG_POINT
 	OUT temp0,scr_out_2 ; point
@@ -122,7 +122,7 @@ DRAW_RESULT:
 	CALL MULTIPLY_BY_10
 	OUT res2,scr_out_3 ; 10^-1
 	
-	LOAD op10,res0
+	LOAD op10,res1
 	LOAD op11,0
 	CALL MULTIPLY_BY_10
 	OUT res2,scr_out_4 ; 10^-2
@@ -160,23 +160,23 @@ ARCTAN:
     CALL SQUARE_ROLL ; x^3
     CALL SQUARE_ROLL ; x^4
     ; divide by 5
-    LOAD op10,res1
-    LOAD op11,res2
+    LOAD op10,res0
+    LOAD op11,res1
     LOAD op20,5
     LOAD op21,0
     CALL DIVISION
     ; adding it to the value saved before
-    LOAD op10,res0
-    LOAD op11,res1
-    LOAD op20,vv0
-    LOAD op21,vv1
+    LOAD op10,res1
+    LOAD op11,res2
+    LOAD op20,vv1
+    LOAD op21,0
     CALL ADDITION
 
     ; multiply by x
     LOAD op10,x0
     LOAD op11,x1
-    LOAD op20,res1
-    LOAD op21,res2
+    LOAD op20,res0
+    LOAD op21,res1
     CALL MULTIPLICATION
 
     ; write result to the memory
